@@ -8,6 +8,14 @@ const bookings = [];
 
 app.use(express.json({ limit: "20kb" }));
 
+app.use((request, _response, next) => {
+  const functionPrefix = "/.netlify/functions/api";
+  if (request.url.startsWith(functionPrefix)) {
+    request.url = `/api${request.url.slice(functionPrefix.length) || "/"}`;
+  }
+  next();
+});
+
 app.get("/api/health", (_request, response) => {
   response.json({ status: "ok" });
 });

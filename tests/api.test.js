@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { createServer } from "node:http";
 import { app } from "../server/app.js";
+import { handler as netlifyHandler } from "../netlify/functions/api.js";
 
 const server = createServer(app);
 let baseUrl;
@@ -64,4 +65,20 @@ test("trial booking accepts valid data", async () => {
   assert.equal(response.status, 201);
   assert.ok(result.bookingId);
   assert.match(result.message, /Дякуємо/);
+});
+
+test("Netlify function serves the course API", async () => {
+  const response = await netlifyHandler({
+    rawUrl: "https://example.netlify.app/.netlify/functions/api/courses",
+    path: "/.netlify/functions/api/courses",
+    httpMethod: "GET",
+    headers: {},
+    queryStringParameters: {},
+    body: null,
+    isBase64Encoded: false,
+  }, {});
+  const courses = JSON.parse(response.body);
+
+  assert.equal(response.statusCode, 200);
+  assert.ok(courses.some((course) => course.id === "piano"));
 });
