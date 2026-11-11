@@ -82,3 +82,17 @@ test("Netlify function serves the course API", async () => {
   assert.equal(response.statusCode, 200);
   assert.ok(courses.some((course) => course.id === "piano"));
 });
+
+test("Netlify function validates trial booking requests", async () => {
+  const response = await netlifyHandler({
+    path: "/.netlify/functions/api/trial-lessons",
+    httpMethod: "POST",
+    body: JSON.stringify({ name: "X" }),
+    isBase64Encoded: false,
+  });
+  const result = JSON.parse(response.body);
+
+  assert.equal(response.statusCode, 400);
+  assert.ok(result.errors.email);
+  assert.ok(result.errors.courseId);
+});
